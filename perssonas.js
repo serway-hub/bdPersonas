@@ -1,29 +1,23 @@
-const express = require('express');
+import express from 'express';
 const app = express();
 const personas = require('./personas.json'); 
 
-console.log(personas)// Asegúrate de que el archivo personas.json se encuentre en el mismo directorio que tu archivo de código
-
-// Ruta para obtener personas filtradas por sexo
+// Ruta para obtener personas filtradas
 app.get('/personas.json', (req, res) => {
-    const sexo = req.query.sexo;
-    const ciudad = req.query.ciudad;
-    const nivel_educativo = req.query.nivel_educativo;
+    const queryParams = req.query; // Recoge todos los parámetros de consulta
 
-    // Filtra los datos en función del valor de los parámetros de consulta
-    let personasFiltradas = personas;
-
-    if (sexo) {
-        personasFiltradas = personasFiltradas.filter(persona => persona.sexo === sexo);
+    if (Object.keys(queryParams).length === 0) {
+        // Si no hay parámetros de consulta, simplemente devuelve todas las personas
+        res.json(personas);
+        return;
     }
 
-    if (ciudad) {
-        personasFiltradas = personasFiltradas.filter(persona => persona.ciudad === ciudad);
-    }
-
-    if (nivel_educativo) {
-        personasFiltradas = personasFiltradas.filter(persona => persona.nivel_educativo === nivel_educativo);
-    }
+    // Filtra los datos en función de los parámetros de consulta
+    const personasFiltradas = personas.filter(persona => {
+        return Object.keys(queryParams).every(param => {
+            return persona[param] === queryParams[param];
+        });
+    });
 
     // Envía los datos filtrados como respuesta en formato JSON
     res.json(personasFiltradas);
